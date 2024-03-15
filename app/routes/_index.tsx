@@ -1,4 +1,5 @@
-import type { MetaFunction } from "@remix-run/node";
+import { json, type MetaFunction } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -7,10 +8,14 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export default function Index() {
+export const loader = () => {
   const now = new Date()
   const timeStr = `${now.toString()}, millis: ${now.getMilliseconds()}`;
+  return json({timeStr})
+}
 
+export default function Index() {
+  const { timeStr }= useLoaderData<typeof loader>()
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <h1>Welcome to Remix</h1>

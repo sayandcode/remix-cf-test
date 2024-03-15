@@ -1,5 +1,13 @@
+import { LambdaFunctionURLHandler } from "aws-lambda";
 import makeApp from "./app";
+import ServerlessHttp from 'serverless-http'
 
-const app = makeApp();
+export const handler: LambdaFunctionURLHandler = (event, context) => {
+  const app = makeApp();
+  const serverlessInstance = ServerlessHttp(app);
+  return serverlessInstance(event, context);
+}
 
-app.listen(3000)
+
+  // const app = makeApp();
+  // app.listen(3000)
