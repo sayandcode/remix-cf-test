@@ -7,7 +7,14 @@ export default function makeApp() {
   
   const app = express();
 
-  app.use(express.static('public'));
+  app.get('/favicon.ico', (req, res) => {
+    res.redirect('https://sayandcode-remix-test-public.s3.ap-south-1.amazonaws.com/public-assets/favicon.ico');
+  })
+
+  app.use('/public-assets/*', (req, res) => {
+    const params = req.originalUrl.slice('/public-assets/'.length);
+    res.redirect(`https://sayandcode-remix-test-public.s3.ap-south-1.amazonaws.com/public-assets/${params}`)
+  });
 
   const serverBuild = build as unknown as ServerBuild;
   app.all('*',
