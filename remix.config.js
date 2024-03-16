@@ -4,7 +4,7 @@ export default {
   // appDirectory: "app",
   // assetsBuildDirectory: "public/build",
   publicPath: process.env.NODE_ENV === 'production'
-    ? process.env.ASSET_STORE_BASE_URL
+    ? `${process.env.ASSET_STORE_BASE_URL}/build`
     : "/build/",
   // serverBuildPath: "build/index.js",
 };
