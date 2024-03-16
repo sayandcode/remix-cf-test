@@ -6,15 +6,15 @@ import { ServerBuild } from '@remix-run/server-runtime';
 export default function makeApp() {
   
   const app = express();
-  const cdnBaseUrl = process.env.CDN_URL;
+  const assetStoreBaseUrl = process.env.ASSET_STORE_BASE_URL;
 
   app.get('/favicon.ico', (req, res) => {
-    res.redirect(`${cdnBaseUrl}/public-assets/favicon.ico`);
+    res.redirect(`${assetStoreBaseUrl}/public-assets/favicon.ico`);
   })
 
   app.use('/public-assets/*', (req, res) => {
     const params = req.originalUrl.slice('/public-assets/'.length);
-    res.redirect(`${cdnBaseUrl}/public-assets/${params}`)
+    res.redirect(`${assetStoreBaseUrl}/public-assets/${params}`)
   });
 
   const serverBuild = build as unknown as ServerBuild;

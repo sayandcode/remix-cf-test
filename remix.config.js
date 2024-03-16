@@ -4,7 +4,7 @@ export default {
   // appDirectory: "app",
   // assetsBuildDirectory: "public/build",
   publicPath: process.env.NODE_ENV === 'production'
-    ? "https://sayandcode-remix-test-public.s3.ap-south-1.amazonaws.com/build/"
+    ? process.env.ASSET_STORE_BASE_URL
     : "/build/",
   // serverBuildPath: "build/index.js",
 };
