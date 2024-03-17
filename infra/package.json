@@ -7,8 +7,8 @@
   "scripts": {
     "prebuild": "cd ../web-app && npm run build",
     "build": "tsc",
-    "watch": "tsc -w",
-    "cdk": "cdk"
+    "predeploy": "npm run build",
+    "deploy": "cdk deploy"
   },
   "devDependencies": {
     "@types/node": "20.11.19",
