@@ -1,9 +1,10 @@
 import path = require('node:path');
-import {CfnOutput, RemovalPolicy, Stack, StackProps} from 'aws-cdk-lib';
-import * as IAM from 'aws-cdk-lib/aws-iam';
+import {CfnElement, CfnOutput, Duration, Fn, RemovalPolicy, Stack, StackProps} from 'aws-cdk-lib';
 import * as Lambda from 'aws-cdk-lib/aws-lambda';
 import * as S3 from 'aws-cdk-lib/aws-s3';
 import * as S3Deployment from 'aws-cdk-lib/aws-s3-deployment';
+import * as Cloudfront from 'aws-cdk-lib/aws-cloudfront';
+import * as CloudfrontOrigins from 'aws-cdk-lib/aws-cloudfront-origins';
 import { Construct } from 'constructs';
 
 type AppServerEnv = {
@@ -61,13 +62,29 @@ export class InfraStack extends Stack {
       retainOnDelete: false,
     })
 
-    const policyToAllowPublicAccessToAppBuildAssets = new IAM.PolicyStatement({
-      effect: IAM.Effect.ALLOW,
-      principals: [new IAM.StarPrincipal()],
-      actions: ["s3:GetObject"],
-      resources: [ appBucket.arnForObjects(`${APP_BUILD_ASSETS_S3_DIR}/*`)],
+    const appCdn = new Cloudfront.Distribution(this, 'app-cdn', {
+      defaultBehavior: {
+        origin: new CloudfrontOrigins.FunctionUrlOrigin(appServerLambdaUrl),
+        allowedMethods: Cloudfront.AllowedMethods.ALLOW_ALL,
+        cachePolicy: new Cloudfront.CachePolicy(this, 'cache-policy-for-app-server', {
+          comment: "Allows the origin server to set the cache behaviour",
+          defaultTtl: Duration.seconds(0),
+          minTtl: Duration.seconds(0),
+          enableAcceptEncodingGzip: true,
+          enableAcceptEncodingBrotli: true,
+          queryStringBehavior: Cloudfront.CacheQueryStringBehavior.all(),
+        }),
+        originRequestPolicy: Cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+        viewerProtocolPolicy: Cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+      additionalBehaviors: {
+        [`/${APP_BUILD_ASSETS_S3_DIR}/*`]: {
+          origin: new CloudfrontOrigins.S3Origin(appBucket),
+          cachePolicy: Cloudfront.CachePolicy.CACHING_OPTIMIZED,
+          viewerProtocolPolicy: Cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        }
+      }
     })
-    appBucket.addToResourcePolicy(policyToAllowPublicAccessToAppBuildAssets)
 
     appBucket.addCorsRule({
       allowedMethods: [S3.HttpMethods.GET],
@@ -75,16 +92,17 @@ export class InfraStack extends Stack {
       maxAge: 3000,
     });
 
-    appServerLambda.addEnvironment(
-      'ASSET_STORE_BASE_URL' satisfies keyof AppServerEnv,
-      `https://${appBucket.bucketRegionalDomainName}/${APP_BUILD_ASSETS_S3_DIR}`
-    );
-
-    new CfnOutput(this, 'finalStuff', {
-      value: JSON.stringify({
-        lambdaUrl: appServerLambdaUrl.url,
-        assetStoreBaseUrl: `https://${appBucket.bucketDomainName}/${APP_BUILD_ASSETS_S3_DIR}`,
-      })
+    new CfnOutput(this, 'app-final-url', {
+      value: `https://${appCdn.domainName}`,
+      description: "The Cloudfront URL where you can access the app."
+    })
+    new CfnOutput(this, 'lambda-url', {
+      value: appServerLambdaUrl.url,
+      description: "The URL where the lambda function is hosted"
+    })
+    new CfnOutput(this, 'app-s3-url', {
+      value: appBucket.bucketDomainName,
+      description: "The URL of the S3 bucket where the app assets are hosted"
     })
   }
 }
