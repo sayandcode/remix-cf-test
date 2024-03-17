@@ -9,12 +9,12 @@ export default function makeApp() {
   const assetStoreBaseUrl = process.env.ASSET_STORE_BASE_URL;
 
   app.get('/favicon.ico', (req, res) => {
-    res.redirect(`${assetStoreBaseUrl}/public-assets/favicon.ico`);
+    res.redirect(`${assetStoreBaseUrl}/favicon.ico`);
   })
 
-  app.use('/public-assets/*', (req, res) => {
-    const params = req.originalUrl.slice('/public-assets/'.length);
-    res.redirect(`${assetStoreBaseUrl}/public-assets/${params}`)
+  app.use('/static/*', (req, res) => {
+    const params = req.originalUrl.slice('/static/'.length);
+    res.redirect(`${assetStoreBaseUrl}/${params}`)
   });
 
   const serverBuild = build as unknown as ServerBuild;

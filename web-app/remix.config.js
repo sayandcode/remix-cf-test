@@ -3,8 +3,6 @@ export default {
   ignoredRouteFiles: ["**/*.css"],
   // appDirectory: "app",
   // assetsBuildDirectory: "public/build",
-  publicPath: process.env.NODE_ENV === 'production'
-    ? `${process.env.ASSET_STORE_BASE_URL}/build`
-    : "/build/",
+  publicPath: "/static/build/",
   // serverBuildPath: "build/index.js",
 };
