@@ -5,6 +5,7 @@
     "infra": "bin/infra.js"
   },
   "scripts": {
+    "prebuild": "cd ../web-app && npm run build",
     "build": "tsc",
     "watch": "tsc -w",
     "cdk": "cdk"
