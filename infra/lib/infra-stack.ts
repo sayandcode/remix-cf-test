@@ -9,7 +9,6 @@ import { Construct } from 'constructs';
 
 type AppServerEnv = {
   NODE_ENV: 'production',
-  ASSET_STORE_BASE_URL: string,
 }
 
 const PATH_TO_WEB_APP_DIR = path.join(__dirname, '../../web-app/');
@@ -28,7 +27,6 @@ export class InfraStack extends Stack {
       handler: 'lambda.handler',
       environment: {
         NODE_ENV: 'production',
-        ASSET_STORE_BASE_URL: '',
       } satisfies AppServerEnv,
     })
 

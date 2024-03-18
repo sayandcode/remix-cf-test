@@ -6,16 +6,19 @@ import { ServerBuild } from '@remix-run/server-runtime';
 export default function makeApp() {
   
   const app = express();
-  const assetStoreBaseUrl = process.env.ASSET_STORE_BASE_URL;
 
   app.get('/favicon.ico', (req, res) => {
-    res.redirect(`${assetStoreBaseUrl}/favicon.ico`);
+    res.setHeader('Cache-Control', "s-maxage=43200")
+    res.redirect(`/static/favicon.ico`);
   })
 
-  app.use('/static/*', (req, res) => {
-    const params = req.originalUrl.slice('/static/'.length);
-    res.redirect(`${assetStoreBaseUrl}/${params}`)
-  });
+  // The /static/* routing is now configured on Cloudfront.
+  // This saves us from having to use `assetStoreBaseUrl` as an env
+  // variable
+  // app.use('/static/*', (req, res) => {
+  //   const params = req.originalUrl.slice('/static/'.length);
+  //   res.redirect(`${assetStoreBaseUrl}/${params}`)
+  // });
 
   const serverBuild = build as unknown as ServerBuild;
   app.all('*',
