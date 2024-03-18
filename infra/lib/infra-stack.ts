@@ -51,15 +51,6 @@ export class InfraStack extends Stack {
       objectOwnership: S3.ObjectOwnership.BUCKET_OWNER_ENFORCED,     
     });
 
-    const pathToAppBuildAssets = path.join(PATH_TO_WEB_APP_DIR, './public/');
-    new S3Deployment.BucketDeployment(this, 'app-build-assets', {
-      destinationBucket: appBucket,
-      sources: [S3Deployment.Source.asset(pathToAppBuildAssets)],
-      destinationKeyPrefix: APP_BUILD_ASSETS_S3_DIR,
-      prune: true,
-      retainOnDelete: false,
-    })
-
     const appCdn = new Cloudfront.Distribution(this, 'app-cdn', {
       defaultBehavior: {
         origin: new CloudfrontOrigins.FunctionUrlOrigin(appServerLambdaUrl),
@@ -82,6 +73,16 @@ export class InfraStack extends Stack {
           viewerProtocolPolicy: Cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         }
       }
+    })
+
+    const pathToAppBuildAssets = path.join(PATH_TO_WEB_APP_DIR, './public/');
+    new S3Deployment.BucketDeployment(this, 'app-build-assets', {
+      destinationBucket: appBucket,
+      sources: [S3Deployment.Source.asset(pathToAppBuildAssets)],
+      destinationKeyPrefix: APP_BUILD_ASSETS_S3_DIR,
+      prune: true,
+      retainOnDelete: false,
+      distribution: appCdn,
     })
 
     appBucket.addCorsRule({
