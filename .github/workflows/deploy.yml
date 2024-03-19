@@ -1,0 +1,32 @@
+name: Deploy on AWS
+on:
+  push:
+    branches: [ main ]
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Get code onto system
+        uses: actions/checkout@v4
+
+      - name: Setup AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-south-1
+          role-to-assume: arn:aws:iam::410062564309:role/gh-actions-remix-cf-test
+          role-session-name: RemixCfTestDeployment
+
+      - name: Setup node v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: "web-app/package-lock.json"
+
+      - name: Build and deploy
+        run: |
+          cd infra
+          npm run deploy

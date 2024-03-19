@@ -5,10 +5,10 @@
     "infra": "bin/infra.js"
   },
   "scripts": {
-    "prebuild": "cd ../web-app && npm run build",
+    "prebuild": "npm ci",
     "build": "tsc",
-    "predeploy": "npm run build",
-    "deploy": "cdk deploy"
+    "predeploy": "npm run build && cd ../web-app && npm run build",
+    "deploy": "cdk deploy --require-approval never"
   },
   "devDependencies": {
     "@types/node": "20.11.19",
