@@ -57,7 +57,6 @@ export class InfraStack extends Stack {
 
     if (!ENV_VARS.APP_CUSTOM_DOMAIN) throw new Error('Please set the custom domain in env variables');
 
-    console.log("Certificate is ", ENV_VARS.APP_CUSTOM_DOMAIN_CERT_ARN);
     const appCustomDomainCert = ACM.Certificate.fromCertificateArn(
       this,
       'app-custom-domain-cert',
