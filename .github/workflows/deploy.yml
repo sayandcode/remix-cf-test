@@ -26,6 +26,12 @@ jobs:
           cache: npm
           cache-dependency-path: "web-app/package-lock.json"
 
+      - name: Setup env
+        env:
+          INFRA_ENV_FILE: ${{ secrets.INFRA_ENV_FILE }}
+        run: |
+          echo "$INFRA_ENV_FILE" > infra/.env
+
       - name: Build and deploy
         run: |
           cd infra

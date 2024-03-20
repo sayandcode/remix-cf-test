@@ -2,14 +2,18 @@ import path = require('node:path');
 import {CfnElement, CfnOutput, Duration, Fn, RemovalPolicy, Stack, StackProps} from 'aws-cdk-lib';
 import * as Lambda from 'aws-cdk-lib/aws-lambda';
 import * as S3 from 'aws-cdk-lib/aws-s3';
+import * as ACM from 'aws-cdk-lib/aws-certificatemanager'
 import * as S3Deployment from 'aws-cdk-lib/aws-s3-deployment';
 import * as Cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as CloudfrontOrigins from 'aws-cdk-lib/aws-cloudfront-origins';
 import { Construct } from 'constructs';
+import getEnvVars from './env';
 
 type AppServerEnv = {
   NODE_ENV: 'production',
 }
+
+const ENV_VARS = getEnvVars();
 
 const PATH_TO_WEB_APP_DIR = path.join(__dirname, '../../web-app/');
 
@@ -51,7 +55,17 @@ export class InfraStack extends Stack {
       objectOwnership: S3.ObjectOwnership.BUCKET_OWNER_ENFORCED,     
     });
 
+    if (!ENV_VARS.APP_CUSTOM_DOMAIN) throw new Error('Please set the custom domain in env variables');
+
+    console.log("Certificate is ", ENV_VARS.APP_CUSTOM_DOMAIN_CERT_ARN);
+    const appCustomDomainCert = ACM.Certificate.fromCertificateArn(
+      this,
+      'app-custom-domain-cert',
+      ENV_VARS.APP_CUSTOM_DOMAIN_CERT_ARN);
+
     const appCdn = new Cloudfront.Distribution(this, 'app-cdn', {
+      domainNames: [ENV_VARS.APP_CUSTOM_DOMAIN],
+      certificate: appCustomDomainCert,
       defaultBehavior: {
         origin: new CloudfrontOrigins.FunctionUrlOrigin(appServerLambdaUrl),
         allowedMethods: Cloudfront.AllowedMethods.ALLOW_ALL,
@@ -91,9 +105,13 @@ export class InfraStack extends Stack {
       maxAge: 3000,
     });
 
-    new CfnOutput(this, 'app-final-url', {
+    new CfnOutput(this, 'cdn-final-url', {
       value: `https://${appCdn.domainName}`,
       description: "The Cloudfront URL where you can access the app."
+    })
+    new CfnOutput(this, 'app-final-url', {
+      value: `https://${ENV_VARS.APP_CUSTOM_DOMAIN}`,
+      description: "The App URL where you can access the app."
     })
     new CfnOutput(this, 'lambda-url', {
       value: appServerLambdaUrl.url,

@@ -8,11 +8,12 @@
     "prebuild": "npm ci",
     "build": "tsc",
     "predeploy": "npm run build && cd ../web-app && npm run build",
-    "deploy": "cdk deploy --require-approval never"
+    "deploy": "env-cmd -f .env cdk deploy --require-approval never"
   },
   "devDependencies": {
     "@types/node": "20.11.19",
     "aws-cdk": "2.132.0",
+    "env-cmd": "^10.1.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.3.3"
   },
